@@ -5,6 +5,10 @@ newtype Matrix = Matrix [[Int]]
 extractM :: Matrix -> [[Int]]
 extractM (Matrix m) = m
 
+extractMaybe :: Maybe a -> a -> a
+extractMaybe (Just a) _ = a
+extractMaybe Nothing fallback = fallback 
+
 instance Show Matrix where
   show (Matrix m) = fmtMatrix m
 
@@ -22,34 +26,37 @@ fmtMatrix m =
 type Line = Int
 type Column = Int
 
-sizeM :: Matrix -> Maybe (Line, Column)
-sizeM (Matrix m@(x:_)) = Just $ (length m , length x) 
-sizeM _ = Nothing
+mSize :: Matrix -> Maybe (Line, Column)
+mSize (Matrix m@(x:_)) = Just $ (length m , length x) 
+mSize _ = Nothing
 
 mIsSquare :: Matrix -> Bool
 mIsSquare m =
-  let s = sizeM m
+  let s = mSize m
   in fmap fst s == fmap snd s
 
 mSizeEq :: Matrix -> Matrix -> Bool
 mSizeEq m m' =
-  let s = sizeM m
-      s' = sizeM m'
+  let s = mSize m
+      s' = mSize m'
   in and [
     (fmap fst s) == (fmap fst s'),
     (fmap snd s) == (fmap snd s')
   ]
 
-multipliable :: Matrix -> Matrix -> Bool
-multipliable m m' = 
-  let s = sizeM m
-      s' = sizeM m'
+mMultipliable :: Matrix -> Matrix -> Bool
+mMultipliable m m' = 
+  let s = mSize m
+      s' = mSize m'
   in fmap snd s == fmap fst s'
 
-addM :: Matrix -> Matrix -> Matrix
-addM matrix matrix' =
+mMultiply :: Matrix -> Matrix -> Matrix
+mMultiply m m' = undefined
+
+mAdd :: Matrix -> Matrix -> Matrix
+mAdd matrix matrix' =
   let lineM = addM' matrix matrix' 
-      s = sizeM matrix
+      s = mSize matrix
   in Matrix $ listToM (extractMaybe s (0,0)) lineM
   where addM' :: Matrix -> Matrix -> [Int]
         addM' m m' =
@@ -62,8 +69,3 @@ addM matrix matrix' =
           let taken = take column list
               dropped = drop column list
           in taken : listToM s dropped 
-
-extractMaybe :: Maybe a -> a -> a
-extractMaybe (Just a) _ = a
-extractMaybe Nothing fallback = fallback 
-
