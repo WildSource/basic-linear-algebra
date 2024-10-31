@@ -62,6 +62,13 @@ column (Matrix matrix) =
     column' (x:xs) acc = column' xs (head x : acc)
     column' [] acc = reverse acc
 
+deconstructList :: [a] -> Maybe (a, [a])
+deconstructList [] = Nothing
+deconstructList list = 
+  let h = head list
+      t = tail list 
+  in Just $ (h, t)
+
 mAdd :: Matrix -> Matrix -> Matrix
 mAdd matrix matrix' =
   let lineM = addM' matrix matrix' 
