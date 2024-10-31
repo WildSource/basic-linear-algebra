@@ -46,22 +46,24 @@ multipliable m m' =
       s' = sizeM m'
   in fmap snd s == fmap fst s'
 
-addM :: Matrix -> Matrix -> [Int]
-addM m m' =
-  let lineM = addM' m m' 
-      s = sizeM m
-  in listToM s lineM  
+addM :: Matrix -> Matrix -> Matrix
+addM matrix matrix' =
+  let lineM = addM' matrix matrix' 
+      s = sizeM matrix
+  in Matrix $ listToM (extractMaybe s (0,0)) lineM
   where addM' :: Matrix -> Matrix -> [Int]
         addM' m m' =
           let elems = concat $ extractM m
               elems' = concat $ extractM m'
           in zipWith (+) elems elems'
-        listToM :: (Line, Column) -> [Int] -> Matrix
+        listToM :: (Line, Column) -> [Int] -> [[Int]]
         listToM _ [] = []
-        listToM (_, column) list = 
-          let taken = take column
-              dropped = drop column
-          in taken : listToM dropped 
+        listToM s@(_, column) list = 
+          let taken = take column list
+              dropped = drop column list
+          in taken : listToM s dropped 
 
-  
+extractMaybe :: Maybe a -> a -> a
+extractMaybe (Just a) _ = a
+extractMaybe Nothing fallback = fallback 
 
