@@ -23,7 +23,7 @@ name:               basic-linear-algebra
 version:            0.1.0.0
 
 -- A short (one-line) description of the package.
-synopsis:           A very basic linear algebra library
+synopsis:           A very basic linear algebra library in Haskell
 
 -- A longer description of the package.
 -- description:
