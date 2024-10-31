@@ -53,6 +53,7 @@ mMultipliable m m' =
 mMultiply :: Matrix -> Matrix -> Matrix
 mMultiply m m' = undefined
 
+-- TODO array of columns instead of only first column
 column :: Matrix -> [Int]
 column (Matrix matrix) =
   column' matrix [] 
