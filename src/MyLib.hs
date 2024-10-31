@@ -77,3 +77,12 @@ mAdd matrix matrix' =
           let taken = take col list
               dropped = drop col list
           in taken : listToM s dropped 
+
+mScale :: Matrix -> Int -> Matrix
+mScale (Matrix m) s = 
+  Matrix $ mScale' m s
+  where
+    mScale' :: [[Int]] -> Int -> [[Int]]
+    mScale' [] _ = []
+    mScale' (x:xs) scale = fmap (* scale) x : mScale' xs scale
+    
