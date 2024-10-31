@@ -14,11 +14,11 @@ instance Show Matrix where
 
 fmtMatrix :: [[Int]] -> String
 fmtMatrix m = 
-  column m 
-  where column :: [[Int]] -> String
-        column [] = "" 
-        column (x:xs) = 
-          "[ " ++ line x ++ "\n" ++ column xs 
+  col m 
+  where col :: [[Int]] -> String
+        col [] = "" 
+        col (x:xs) = 
+          "[ " ++ line x ++ "\n" ++ col xs 
         line :: [Int] -> String 
         line [] = "]"
         line (x:xs) = (show x) ++ " " ++ line xs
@@ -53,6 +53,14 @@ mMultipliable m m' =
 mMultiply :: Matrix -> Matrix -> Matrix
 mMultiply m m' = undefined
 
+column :: Matrix -> [Int]
+column (Matrix matrix) =
+  column' matrix [] 
+  where 
+    column' :: [[Int]] -> [Int] -> [Int]
+    column' (x:xs) acc = column' xs (head x : acc)
+    column' [] acc = reverse acc
+
 mAdd :: Matrix -> Matrix -> Matrix
 mAdd matrix matrix' =
   let lineM = addM' matrix matrix' 
@@ -65,7 +73,7 @@ mAdd matrix matrix' =
           in zipWith (+) elems elems'
         listToM :: (Line, Column) -> [Int] -> [[Int]]
         listToM _ [] = []
-        listToM s@(_, column) list = 
-          let taken = take column list
-              dropped = drop column list
+        listToM s@(_, col) list = 
+          let taken = take col list
+              dropped = drop col list
           in taken : listToM s dropped 
