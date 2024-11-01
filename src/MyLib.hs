@@ -1,4 +1,5 @@
 module MyLib where
+import GHC.OldList (transpose)
 
 newtype Matrix = Matrix [[Int]] 
 
@@ -35,7 +36,7 @@ mIsSquare m =
   let s = mSize m
   in fmap fst s == fmap snd s
 
-mSizeEq :: Matrix -> Matrix -> Bool
+columnmSizeEq :: Matrix -> Matrix -> Bool
 mSizeEq m m' =
   let s = mSize m
       s' = mSize m'
@@ -51,23 +52,14 @@ mMultipliable m m' =
   in fmap snd s == fmap fst s'
 
 mMultiply :: Matrix -> Matrix -> Matrix
-mMultiply m m' = undefined
+mMultiply m m' =
+  let col = column m'
+  in undefined
 
 -- TODO array of columns instead of only first column
-column :: Matrix -> [Int]
+column :: Matrix -> Matrix
 column (Matrix matrix) =
-  column' matrix [] 
-  where 
-    column' :: [[Int]] -> [Int] -> [Int]
-    column' (x:xs) acc = column' xs (head x : acc)
-    column' [] acc = reverse acc
-
-deconstructList :: [a] -> Maybe (a, [a])
-deconstructList [] = Nothing
-deconstructList list = 
-  let h = head list
-      t = tail list 
-  in Just $ (h, t)
+  Matrix $ transpose matrix
 
 mAdd :: Matrix -> Matrix -> Matrix
 mAdd matrix matrix' =
