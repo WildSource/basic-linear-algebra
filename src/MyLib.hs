@@ -1,6 +1,5 @@
 module MyLib where
 import GHC.OldList (transpose)
-import GHC.Exception (underflowException)
 
 newtype Matrix = Matrix [[Int]] 
 
@@ -42,8 +41,7 @@ mSizeMult m m' =
     mSizeMult' matrix matrix' = 
       let s = mSize matrix
           s' = mSize matrix'
-      in (fst $ extractMaybe s, snd $ extractMaybe s')
-
+      in (fst $ extractMaybe s (0,0) , snd $ extractMaybe s' (0,0))
 
 mIsSquare :: Matrix -> Bool
 mIsSquare m =
@@ -65,10 +63,11 @@ mMultipliable m m' =
       s' = mSize m'
   in fmap snd s == fmap fst s'
 
-mMultiply :: Matrix -> Matrix -> [Int]
-mMultiply (Matrix m) m' =
+mMultiply :: Matrix -> Matrix -> Matrix
+mMultiply matrix@(Matrix m) m' =
   let col = extractM $ column m'
-  in calculate m col
+      s = extractMaybe (mSizeMult matrix m') (0,0)
+  in mLines (calculate m col) s
   where
     calculate :: [[Int]] -> [[Int]] -> [Int] 
     calculate l1 l2 = [calculate' x z [] | x <- l1, z <- l2] 
@@ -78,7 +77,13 @@ mMultiply (Matrix m) m' =
     calculate' [] (_:_) _ = 0
     calculate' (_:_) [] _ = 0
     calculate' (x:xs) (z:zs) acc = calculate' xs zs ((x * z) : acc)
-         
+
+mLines :: [Int] -> (Line, Column) -> Matrix
+mLines list (_, c) = Matrix $ takeN c list         
+  where
+    takeN :: Int -> [Int] -> [[Int]]
+    takeN _ [] = []
+    takeN col list' = take col list' : takeN col (drop col list')
       
 column :: Matrix -> Matrix
 column (Matrix matrix) =
