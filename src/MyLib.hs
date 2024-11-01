@@ -1,18 +1,25 @@
-module MyLib where
+module MyLib (Matrix(..), extractM) where
 import GHC.OldList (transpose)
 
+type Line = Int
+type Column = Int
+
+-- Type of matrix contains a list of lists of Int
 newtype Matrix = Matrix [[Int]] 
-
-extractM :: Matrix -> [[Int]]
-extractM (Matrix m) = m
-
-extractMaybe :: Maybe a -> a -> a
-extractMaybe (Just a) _ = a
-extractMaybe Nothing fallback = fallback 
 
 instance Show Matrix where
   show (Matrix m) = fmtMatrix m
 
+-- Used to extract the list of lists of Int from Matrix type 
+extractM :: Matrix -> [[Int]]
+extractM (Matrix m) = m
+
+-- Extract the data from Maybe Monad
+extractMaybe :: Maybe a -> a -> a
+extractMaybe (Just a) _ = a
+extractMaybe Nothing fallback = fallback 
+
+-- used for the implementation of Show typeclass for the type Matrix
 fmtMatrix :: [[Int]] -> String
 fmtMatrix m = 
   col m 
@@ -24,13 +31,12 @@ fmtMatrix m =
         line [] = "]"
         line (x:xs) = (show x) ++ " " ++ line xs
 
-type Line = Int
-type Column = Int
-
+-- Get the size of the matrix in a tuple (Int, Int) 
 mSize :: Matrix -> Maybe (Line, Column)
 mSize (Matrix m@(x:_)) = Just $ (length m , length x) 
 mSize _ = Nothing
 
+-- Returns the resulting size of the matrix after multiplication of m and m'.
 mSizeMult :: Matrix -> Matrix -> Maybe (Line, Column)
 mSizeMult m m' = 
   if mMultipliable m m' 
@@ -43,11 +49,14 @@ mSizeMult m m' =
           s' = mSize matrix'
       in (fst $ extractMaybe s (0,0) , snd $ extractMaybe s' (0,0))
 
+-- verify if matrix is square matrix
 mIsSquare :: Matrix -> Bool
 mIsSquare m =
   let s = mSize m
   in fmap fst s == fmap snd s
 
+
+-- verify if both matrix are of equal size
 mSizeEq :: Matrix -> Matrix -> Bool
 mSizeEq m m' =
   let s = mSize m
@@ -57,12 +66,14 @@ mSizeEq m m' =
     (fmap snd s) == (fmap snd s')
   ]
 
+-- verify if both matrices can be multiplied
 mMultipliable :: Matrix -> Matrix -> Bool
 mMultipliable m m' = 
   let s = mSize m
       s' = mSize m'
   in fmap snd s == fmap fst s'
 
+-- Multiply both matrices (must first be verified with mMultipliable)
 mMultiply :: Matrix -> Matrix -> Matrix
 mMultiply matrix@(Matrix m) m' =
   let col = extractM $ column m'
@@ -78,6 +89,9 @@ mMultiply matrix@(Matrix m) m' =
     calculate' (_:_) [] _ = 0
     calculate' (x:xs) (z:zs) acc = calculate' xs zs ((x * z) : acc)
 
+{- takes a list of Int and returns a Matrix 
+ - by making the lines of the matrix 
+ - with the size resulting from mSizeMult and the take function -}
 mLines :: [Int] -> (Line, Column) -> Matrix
 mLines list (_, c) = Matrix $ takeN c list         
   where

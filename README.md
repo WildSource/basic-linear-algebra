@@ -1,5 +1,6 @@
 # Basic linear algebra in Haskell
 A very basic linear algebra library in Haskell 
+(Only works for Int for now)
 
 # Features
 - Matrix creation
