@@ -1,5 +1,6 @@
 module MyLib where
 import GHC.OldList (transpose)
+import GHC.Exception (underflowException)
 
 newtype Matrix = Matrix [[Int]] 
 
@@ -31,12 +32,25 @@ mSize :: Matrix -> Maybe (Line, Column)
 mSize (Matrix m@(x:_)) = Just $ (length m , length x) 
 mSize _ = Nothing
 
+mSizeMult :: Matrix -> Matrix -> Maybe (Line, Column)
+mSizeMult m m' = 
+  if mMultipliable m m' 
+  then Just $ mSizeMult' m m'  
+  else Nothing
+  where
+    mSizeMult' :: Matrix -> Matrix -> (Line, Column)
+    mSizeMult' matrix matrix' = 
+      let s = mSize matrix
+          s' = mSize matrix'
+      in (fst $ extractMaybe s, snd $ extractMaybe s')
+
+
 mIsSquare :: Matrix -> Bool
 mIsSquare m =
   let s = mSize m
   in fmap fst s == fmap snd s
 
-columnmSizeEq :: Matrix -> Matrix -> Bool
+mSizeEq :: Matrix -> Matrix -> Bool
 mSizeEq m m' =
   let s = mSize m
       s' = mSize m'
@@ -51,12 +65,21 @@ mMultipliable m m' =
       s' = mSize m'
   in fmap snd s == fmap fst s'
 
-mMultiply :: Matrix -> Matrix -> Matrix
-mMultiply m m' =
-  let col = column m'
-  in undefined
+mMultiply :: Matrix -> Matrix -> [Int]
+mMultiply (Matrix m) m' =
+  let col = extractM $ column m'
+  in calculate m col
+  where
+    calculate :: [[Int]] -> [[Int]] -> [Int] 
+    calculate l1 l2 = [calculate' x z [] | x <- l1, z <- l2] 
 
--- TODO array of columns instead of only first column
+    calculate' :: [Int] -> [Int] -> [Int] -> Int 
+    calculate' [] [] acc = foldl' (+) 0 acc
+    calculate' [] (_:_) _ = 0
+    calculate' (_:_) [] _ = 0
+    calculate' (x:xs) (z:zs) acc = calculate' xs zs ((x * z) : acc)
+         
+      
 column :: Matrix -> Matrix
 column (Matrix matrix) =
   Matrix $ transpose matrix
