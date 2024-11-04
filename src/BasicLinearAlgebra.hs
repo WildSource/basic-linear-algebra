@@ -19,16 +19,28 @@ import GHC.OldList (transpose)
 
 type Line = Int
 type Column = Int
-type Scale = Int
+type Scale = Rational 
 
 -- | Type of matrix contains a list of lists of Int
-newtype Matrix = Matrix [[Int]] 
+newtype Matrix = Matrix [[Rational]] 
 
 instance Show Matrix where
   show (Matrix m) = fmtMatrix m
 
+-- | Used for the implementation of Show typeclass for the type Matrix
+fmtMatrix :: [[Rational]] -> String
+fmtMatrix m = 
+  col m 
+  where col :: [[Rational]] -> String
+        col [] = "" 
+        col (x:xs) = 
+          "[ " ++ line x ++ "\n" ++ col xs 
+        line :: [Rational] -> String 
+        line [] = "]"
+        line (x:xs) = (show (fromRational x :: Double)) ++ " " ++ line xs
+
 -- | Used to extract the list of lists of Int from Matrix type 
-extractM :: Matrix -> [[Int]]
+extractM :: Matrix -> [[Rational]]
 extractM (Matrix m) = m
 
 -- | Extract the data from Maybe Monad
@@ -37,18 +49,6 @@ extractM (Matrix m) = m
 extractMaybe :: Maybe a -> a -> a
 extractMaybe (Just a) _ = a
 extractMaybe Nothing fallback = fallback 
-
--- | Used for the implementation of Show typeclass for the type Matrix
-fmtMatrix :: [[Int]] -> String
-fmtMatrix m = 
-  col m 
-  where col :: [[Int]] -> String
-        col [] = "" 
-        col (x:xs) = 
-          "[ " ++ line x ++ "\n" ++ col xs 
-        line :: [Int] -> String 
-        line [] = "]"
-        line (x:xs) = (show x) ++ " " ++ line xs
 
 -- | Get the size of the matrix in a tuple (Int, Int) 
 mSize :: Matrix -> Maybe (Line, Column)
@@ -99,11 +99,11 @@ mMultiply matrix@(Matrix m) m' =
       s = extractMaybe (mSizeMult matrix m') (0,0)
   in mLines (calculate m col) s
   where
-    calculate :: [[Int]] -> [[Int]] -> [Int] 
+    calculate :: [[Rational]] -> [[Rational]] -> [Rational] 
     calculate l1 l2 = [calculate' x z [] | x <- l1, z <- l2] 
 
-    calculate' :: [Int] -> [Int] -> [Int] -> Int 
-    calculate' [] [] acc = foldl' (+) 0 acc
+    calculate' :: [Rational] -> [Rational] -> [Rational] -> Rational 
+    calculate' [] [] acc = foldl' (+) (0 :: Rational) acc
     calculate' [] (_:_) _ = 0
     calculate' (_:_) [] _ = 0
     calculate' (x:xs) (z:zs) acc = calculate' xs zs ((x * z) : acc)
@@ -113,10 +113,10 @@ Takes a list of Int and returns a Matrix
 by making the lines of the matrix 
 with the size resulting from mSizeMult and the take function 
 -}
-mLines :: [Int] -> (Line, Column) -> Matrix
+mLines :: [Rational] -> (Line, Column) -> Matrix
 mLines list (_, c) = Matrix $ takeN c list         
   where
-    takeN :: Int -> [Int] -> [[Int]]
+    takeN :: Int -> [Rational] -> [[Rational]]
     takeN _ [] = []
     takeN col list' = take col list' : takeN col (drop col list')
       
@@ -131,12 +131,12 @@ mAdd matrix matrix' =
   let lineM = addM' matrix matrix' 
       s = mSize matrix
   in Matrix $ listToM (extractMaybe s (0,0)) lineM
-  where addM' :: Matrix -> Matrix -> [Int]
+  where addM' :: Matrix -> Matrix -> [Rational]
         addM' m m' =
           let elems = concat $ extractM m
               elems' = concat $ extractM m'
           in zipWith (+) elems elems'
-        listToM :: (Line, Column) -> [Int] -> [[Int]]
+        listToM :: (Line, Column) -> [Rational] -> [[Rational]]
         listToM _ [] = []
         listToM s@(_, col) list = 
           let taken = take col list
@@ -148,7 +148,7 @@ mScale :: Matrix -> Scale -> Matrix
 mScale (Matrix m) s = 
   Matrix $ mScale' m s
   where
-    mScale' :: [[Int]] -> Int -> [[Int]]
+    mScale' :: [[Rational]] -> Rational -> [[Rational]]
     mScale' [] _ = []
     mScale' (x:xs) scale = fmap (* scale) x : mScale' xs scale
     
