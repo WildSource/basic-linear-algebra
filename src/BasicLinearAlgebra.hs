@@ -29,15 +29,16 @@ newtype Matrix = Matrix [[Rational]]
 instance Show Matrix where
   show (Matrix m) = fmtMatrix m
 
+-- | Returns Bool based on if the Rational is a Float
 hasDecimal :: Rational -> Bool
 hasDecimal x = denominator x /= 1
 
+-- | Formats the Rational into String
 showRatio :: Rational -> String 
 showRatio = \rat -> 
   if not $ hasDecimal rat 
   then show (fromInteger $ numerator rat :: Int)
   else show (fromRational rat :: Double)
-  
 
 -- | Used for the implementation of Show typeclass for the type Matrix
 fmtMatrix :: [[Rational]] -> String
