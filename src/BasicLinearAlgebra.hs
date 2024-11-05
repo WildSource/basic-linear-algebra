@@ -15,6 +15,8 @@ module BasicLinearAlgebra (
   mAdd, 
   mScale 
 ) where
+
+import Data.Ratio
 import GHC.OldList (transpose)
 
 type Line = Int
@@ -27,6 +29,16 @@ newtype Matrix = Matrix [[Rational]]
 instance Show Matrix where
   show (Matrix m) = fmtMatrix m
 
+hasDecimal :: Rational -> Bool
+hasDecimal x = denominator x /= 1
+
+showRatio :: Rational -> String 
+showRatio = \rat -> 
+  if not $ hasDecimal rat 
+  then show (fromInteger $ numerator rat :: Int)
+  else show (fromRational rat :: Double)
+  
+
 -- | Used for the implementation of Show typeclass for the type Matrix
 fmtMatrix :: [[Rational]] -> String
 fmtMatrix m = 
@@ -37,7 +49,7 @@ fmtMatrix m =
           "[ " ++ line x ++ "\n" ++ col xs 
         line :: [Rational] -> String 
         line [] = "]"
-        line (x:xs) = (show (fromRational x :: Double)) ++ " " ++ line xs
+        line (x:xs) = (show (showRatio x)) ++ " " ++ line xs
 
 -- | Used to extract the list of lists of Int from Matrix type 
 extractM :: Matrix -> [[Rational]]
